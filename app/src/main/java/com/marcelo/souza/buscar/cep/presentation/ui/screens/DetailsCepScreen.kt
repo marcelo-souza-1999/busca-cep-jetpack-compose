@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -54,7 +55,9 @@ fun DetailsCepScreen(
                     modifier = Modifier
                         .testTag("inputCep")
                         .padding(top = dimensionResource(R.dimen.size_30)),
-                    onValueChange = {}),
+                    onValueChange = {},
+                    keyboardType = KeyboardType.Number
+                ),
                 FormFieldData(
                     value = "Rua José Bonifácio de Arantes",
                     enabled = false,
@@ -62,7 +65,8 @@ fun DetailsCepScreen(
                     isErrorEmpty = false,
                     isErrorInvalid = false,
                     modifier = Modifier.testTag("inputStreet"),
-                    onValueChange = {}
+                    onValueChange = {},
+                    keyboardType = KeyboardType.Text
                 ),
                 FormFieldData(
                     value = "Vila Paiva",
@@ -71,7 +75,8 @@ fun DetailsCepScreen(
                     isErrorEmpty = false,
                     isErrorInvalid = false,
                     modifier = Modifier.testTag("inputNeighborhood"),
-                    onValueChange = {}
+                    onValueChange = {},
+                    keyboardType = KeyboardType.Text
                 ),
                 FormFieldData(
                     value = "São José dos Campos",
@@ -80,7 +85,8 @@ fun DetailsCepScreen(
                     isErrorEmpty = false,
                     isErrorInvalid = false,
                     modifier = Modifier.testTag("inputCity"),
-                    onValueChange = {}
+                    onValueChange = {},
+                    keyboardType = KeyboardType.Text
                 ),
                 FormFieldData(
                     value = "São Paulo",
@@ -89,7 +95,8 @@ fun DetailsCepScreen(
                     isErrorEmpty = false,
                     isErrorInvalid = false,
                     modifier = Modifier.testTag("inputState"),
-                    onValueChange = {}
+                    onValueChange = {},
+                    keyboardType = KeyboardType.Text
                 )
             )
             CepFormFields(fields)
