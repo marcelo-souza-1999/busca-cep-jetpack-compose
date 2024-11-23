@@ -161,7 +161,7 @@ private fun CepFormFields(fields: List<FormFieldData>) {
     showBackground = true, showSystemUi = false, uiMode = Configuration.UI_MODE_NIGHT_YES
 )
 @Composable
-private fun PreviewSearchCep() {
+internal fun PreviewSearchCep() {
     CEPTheme {
         SearchCepScreen(rememberNavController())
     }
