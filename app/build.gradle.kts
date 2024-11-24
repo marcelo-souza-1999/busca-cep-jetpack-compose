@@ -112,6 +112,7 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.gson)
+    implementation(libs.bundles.retrofit)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)

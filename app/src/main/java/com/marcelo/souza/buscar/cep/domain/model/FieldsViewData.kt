@@ -3,7 +3,7 @@ package com.marcelo.souza.buscar.cep.domain.model
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 
-data class FormFieldData(
+data class FieldsViewData(
     val value: String,
     val label: String,
     val isErrorEmpty: Boolean = false,
