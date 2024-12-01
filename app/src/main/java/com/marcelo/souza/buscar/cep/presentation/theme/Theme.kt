@@ -11,21 +11,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
+    primary = Green,
     secondary = PurpleGrey80,
-    tertiary = Pink80
+    tertiary = Pink80,
+    error = Red
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
+    primary = Green,
     secondary = PurpleGrey40,
-    tertiary = Pink40
+    tertiary = Pink40,
+    error = Red
 )
 
 @Composable
 fun CEPTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
