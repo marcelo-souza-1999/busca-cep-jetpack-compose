@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.marcelo.souza.buscar.cep.R
-import com.marcelo.souza.buscar.cep.domain.model.FormFieldData
+import com.marcelo.souza.buscar.cep.domain.model.FieldsViewData
 import com.marcelo.souza.buscar.cep.presentation.components.FormOutlinedTextField
 import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
 import com.marcelo.souza.buscar.cep.presentation.theme.CEPTheme
@@ -46,7 +46,7 @@ fun DetailsCepScreen(
                 .imePadding()
         ) {
             val fields = listOf(
-                FormFieldData(
+                FieldsViewData(
                     value = "12213-350",
                     enabled = false,
                     label = stringResource(R.string.text_label_cep),
@@ -58,7 +58,7 @@ fun DetailsCepScreen(
                     onValueChange = {},
                     keyboardType = KeyboardType.Number
                 ),
-                FormFieldData(
+                FieldsViewData(
                     value = "Rua José Bonifácio de Arantes",
                     enabled = false,
                     label = stringResource(R.string.text_label_street),
@@ -68,7 +68,7 @@ fun DetailsCepScreen(
                     onValueChange = {},
                     keyboardType = KeyboardType.Text
                 ),
-                FormFieldData(
+                FieldsViewData(
                     value = "Vila Paiva",
                     enabled = false,
                     label = stringResource(R.string.text_label_neighborhood),
@@ -78,7 +78,7 @@ fun DetailsCepScreen(
                     onValueChange = {},
                     keyboardType = KeyboardType.Text
                 ),
-                FormFieldData(
+                FieldsViewData(
                     value = "São José dos Campos",
                     enabled = false,
                     label = stringResource(R.string.text_label_city),
@@ -88,7 +88,7 @@ fun DetailsCepScreen(
                     onValueChange = {},
                     keyboardType = KeyboardType.Text
                 ),
-                FormFieldData(
+                FieldsViewData(
                     value = "São Paulo",
                     enabled = false,
                     label = stringResource(R.string.text_label_state),
@@ -101,6 +101,8 @@ fun DetailsCepScreen(
             )
             CepFormFields(fields)
 
+            navController.context
+
             Spacer(
                 modifier = Modifier
                     .padding(top = dimensionResource(id = R.dimen.size_12))
@@ -110,7 +112,7 @@ fun DetailsCepScreen(
 }
 
 @Composable
-private fun CepFormFields(fields: List<FormFieldData>) {
+private fun CepFormFields(fields: List<FieldsViewData>) {
     fields.forEach { field ->
         FormOutlinedTextField(
             value = field.value,
