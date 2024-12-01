@@ -103,6 +103,8 @@ fun SearchCepScreen(
             )
             CepFormFields(fields)
 
+            navController.context
+
             Spacer(
                 modifier = Modifier
                     .padding(top = dimensionResource(id = R.dimen.size_12))
