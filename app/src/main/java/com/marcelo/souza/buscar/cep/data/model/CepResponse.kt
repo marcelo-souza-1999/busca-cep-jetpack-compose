@@ -12,5 +12,7 @@ data class CepResponse(
     @SerializedName("localidade")
     val city: String,
     @SerializedName("estado")
-    val state: String
+    val state: String,
+    @SerializedName("erro")
+    val error: Boolean?
 )

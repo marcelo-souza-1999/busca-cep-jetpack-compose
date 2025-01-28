@@ -11,7 +11,8 @@ object CepMapper {
             street = response.street,
             neighborhood = response.neighborhood,
             city = response.city,
-            state = response.state
+            state = response.state,
+            error = response.error
         )
     }
 }

@@ -29,12 +29,17 @@ fun FormOutlinedTextField(
     isErrorInvalid: Boolean = false,
     errorMessageEmpty: String? = null,
     errorMessageInvalid: String? = null,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    maxLength: Int? = null
 ) {
     OutlinedTextField(
         value = value,
         enabled = enabled,
-        onValueChange = onValueChange,
+        onValueChange = { newValue ->
+            if (maxLength == null || newValue.length <= maxLength) {
+                onValueChange(newValue)
+            }
+        },
         label = { Text(text = label) },
         maxLines = 1,
         isError = isErrorEmpty || isErrorInvalid,

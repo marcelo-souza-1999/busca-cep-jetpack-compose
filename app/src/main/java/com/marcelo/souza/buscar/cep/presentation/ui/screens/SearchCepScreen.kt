@@ -11,10 +11,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,14 +29,21 @@ import com.marcelo.souza.buscar.cep.presentation.components.FormOutlinedTextFiel
 import com.marcelo.souza.buscar.cep.presentation.components.PrimaryButton
 import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
 import com.marcelo.souza.buscar.cep.presentation.theme.CEPTheme
+import com.marcelo.souza.buscar.cep.presentation.viewmodel.CepViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SearchCepScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: CepViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
-
     val scrollState = rememberScrollState()
+
+    var isLoading = false
+    val initializeFields = getInitializedFields(viewModel)
+
+    fun fetchGetDataCep(cep: String) = viewModel.getDataCep(cep)
 
     Scaffold(topBar = {
         TopAppBar(
@@ -47,67 +57,11 @@ fun SearchCepScreen(
                 .verticalScroll(scrollState)
                 .imePadding()
         ) {
-            val fields = listOf(
-                FieldsViewData(
-                    value = "12213350",
-                    enabled = true,
-                    label = stringResource(R.string.text_label_cep),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier
-                        .testTag("inputCep")
-                        .padding(top = dimensionResource(R.dimen.size_30)),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Number
-                ),
-                FieldsViewData(
-                    value = "Rua José Bonifácio de Arantes",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_street),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputStreet"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "Vila Paiva",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_neighborhood),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputNeighborhood"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "São José dos Campos",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_city),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputCity"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "São Paulo",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_state),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputState"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                )
-            )
-            CepFormFields(fields)
 
-            navController.context
+            ShowFields(fields = initializeFields)
 
             Spacer(
-                modifier = Modifier
-                    .padding(top = dimensionResource(id = R.dimen.size_12))
+                modifier = Modifier.padding(top = dimensionResource(id = R.dimen.size_12))
             )
 
             Row(
@@ -119,9 +73,10 @@ fun SearchCepScreen(
                     )
             ) {
                 PrimaryButton(
-                    onClickBtn = { /* Lógica de buscar CEP */ },
-                    modifier = Modifier
-                        .padding(start = dimensionResource(R.dimen.size_20)),
+                    onClickBtn = {
+
+                    },
+                    modifier = Modifier.padding(start = dimensionResource(R.dimen.size_20)),
                     text = stringResource(R.string.text_btn_search_cep),
                     isLoading = false
                 )
@@ -143,7 +98,72 @@ fun SearchCepScreen(
 }
 
 @Composable
-private fun CepFormFields(fields: List<FieldsViewData>) {
+private fun getInitializedFields(viewModel: CepViewModel): List<FieldsViewData> {
+    val cepValue by viewModel.cep.collectAsState()
+    val streetValue by viewModel.street.collectAsState()
+    val neighborhoodValue by viewModel.neighborhood.collectAsState()
+    val cityValue by viewModel.city.collectAsState()
+    val stateValue by viewModel.state.collectAsState()
+
+    return listOf(
+        FieldsViewData(
+            value = cepValue,
+            enabled = true,
+            label = stringResource(R.string.label_cep),
+            isErrorEmpty = false,
+            isErrorInvalid = false,
+            modifier = Modifier
+                .testTag("inputCep")
+                .padding(top = dimensionResource(R.dimen.size_30)),
+            onValueChange = viewModel::updateCep,
+            keyboardType = KeyboardType.Number,
+            maxLength = integerResource(R.integer.eight)
+        ), FieldsViewData(
+            value = streetValue,
+            enabled = false,
+            label = stringResource(R.string.label_street),
+            isErrorEmpty = false,
+            isErrorInvalid = false,
+            modifier = Modifier
+                .testTag("inputStreet"),
+            onValueChange = viewModel::updateStreet,
+            keyboardType = KeyboardType.Text
+        ), FieldsViewData(
+            value = neighborhoodValue,
+            enabled = false,
+            label = stringResource(R.string.label_neighborhood),
+            isErrorEmpty = false,
+            isErrorInvalid = false,
+            modifier = Modifier
+                .testTag("inputNeighborhood"),
+            onValueChange = viewModel::updateNeighborhood,
+            keyboardType = KeyboardType.Text
+        ), FieldsViewData(
+            value = cityValue,
+            enabled = false,
+            label = stringResource(R.string.label_city),
+            isErrorEmpty = false,
+            isErrorInvalid = false,
+            modifier = Modifier
+                .testTag("inputCity"),
+            onValueChange = viewModel::updateCity,
+            keyboardType = KeyboardType.Text
+        ), FieldsViewData(
+            value = stateValue,
+            enabled = false,
+            label = stringResource(R.string.label_state),
+            isErrorEmpty = false,
+            isErrorInvalid = false,
+            modifier = Modifier
+                .testTag("inputState"),
+            onValueChange = viewModel::updateState,
+            keyboardType = KeyboardType.Text
+        )
+    )
+}
+
+@Composable
+private fun ShowFields(fields: List<FieldsViewData>) {
     fields.forEach { field ->
         FormOutlinedTextField(
             value = field.value,
@@ -154,7 +174,9 @@ private fun CepFormFields(fields: List<FieldsViewData>) {
             errorMessageEmpty = stringResource(R.string.error_message_required_field),
             errorMessageInvalid = stringResource(R.string.error_message_invalid_field),
             label = field.label,
-            modifier = field.modifier
+            modifier = field.modifier,
+            keyboardType = field.keyboardType,
+            maxLength = field.maxLength
         )
     }
 }

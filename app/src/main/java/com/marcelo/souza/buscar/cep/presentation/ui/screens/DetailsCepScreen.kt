@@ -45,61 +45,6 @@ fun DetailsCepScreen(
                 .verticalScroll(scrollState)
                 .imePadding()
         ) {
-            val fields = listOf(
-                FieldsViewData(
-                    value = "12213-350",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_cep),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier
-                        .testTag("inputCep")
-                        .padding(top = dimensionResource(R.dimen.size_30)),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Number
-                ),
-                FieldsViewData(
-                    value = "Rua José Bonifácio de Arantes",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_street),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputStreet"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "Vila Paiva",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_neighborhood),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputNeighborhood"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "São José dos Campos",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_city),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputCity"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                ),
-                FieldsViewData(
-                    value = "São Paulo",
-                    enabled = false,
-                    label = stringResource(R.string.text_label_state),
-                    isErrorEmpty = false,
-                    isErrorInvalid = false,
-                    modifier = Modifier.testTag("inputState"),
-                    onValueChange = {},
-                    keyboardType = KeyboardType.Text
-                )
-            )
-            CepFormFields(fields)
 
             navController.context
 

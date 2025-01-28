@@ -11,5 +11,6 @@ data class FieldsViewData(
     val enabled: Boolean = true,
     val modifier: Modifier = Modifier,
     val onValueChange: (String) -> Unit,
-    val keyboardType: KeyboardType
+    val keyboardType: KeyboardType,
+    val maxLength: Int? = null
 )

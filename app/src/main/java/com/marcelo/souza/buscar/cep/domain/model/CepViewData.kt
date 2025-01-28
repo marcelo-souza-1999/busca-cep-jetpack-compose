@@ -5,5 +5,6 @@ data class CepViewData(
     val street: String,
     val neighborhood: String,
     val city: String,
-    val state: String
+    val state: String,
+    val error: Boolean?
 )

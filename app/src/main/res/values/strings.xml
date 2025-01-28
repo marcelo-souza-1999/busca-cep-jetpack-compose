@@ -5,12 +5,12 @@
     <string name="title_search_cep_top_app_bar">Buscar Cep</string>
     <string name="title_details_cep_top_app_bar">Detalhes do Cep</string>
 
-    <!-- Labels dos campos de entrada -->
-    <string name="text_label_cep">Cep</string>
-    <string name="text_label_street">Rua</string>
-    <string name="text_label_neighborhood">Bairro</string>
-    <string name="text_label_city">Cidade</string>
-    <string name="text_label_state">Estado</string>
+    <!-- Label -->
+    <string name="label_cep">Cep</string>
+    <string name="label_street">Rua</string>
+    <string name="label_neighborhood">Bairro</string>
+    <string name="label_city">Cidade</string>
+    <string name="label_state">Estado</string>
 
     <!-- Mensagens de erro de validação -->
     <string name="error_message_required_field">Campo obrigatório</string>
