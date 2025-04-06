@@ -15,7 +15,8 @@ class CepDataSourceImpl(
 
     override fun fetchDataCep(cep: String): Flow<CepViewData> {
         return flow {
-            mapResponseToViewData(cepApi.getDataCep(cep))
+            val response = cepApi.getDataCep(cep)
+            emit(mapResponseToViewData(response))
         }
     }
 }

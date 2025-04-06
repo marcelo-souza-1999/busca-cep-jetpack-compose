@@ -27,6 +27,7 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     text: String,
     isLoading: Boolean = false,
+    enabled: Boolean = true,
     backgroundColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
@@ -37,7 +38,8 @@ fun PrimaryButton(
             containerColor = backgroundColor
         ),
         modifier = modifier,
-        shape = RectangleShape
+        shape = RectangleShape,
+        enabled = enabled && !isLoading
     ) {
         if (isLoading) {
             CircularProgressIndicator(
@@ -70,6 +72,7 @@ fun PreviewShowButton() {
                 .padding(dimensionResource(id = R.dimen.size_20)),
             text = context.getString(R.string.text_btn_search_cep),
             isLoading = false,
+            enabled = true,
             backgroundColor = MaterialTheme.colorScheme.primary
         )
     }

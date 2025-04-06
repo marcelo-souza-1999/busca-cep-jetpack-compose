@@ -9,5 +9,5 @@ class CepRepositoryImpl(
     private val dataSource: CepDataSource
 ) : CepRepository {
 
-    override suspend fun getDataCep(cep: String) = dataSource.fetchDataCep(cep)
+    override fun getDataCep(cep: String) = dataSource.fetchDataCep(cep)
 }

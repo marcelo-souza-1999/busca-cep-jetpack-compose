@@ -12,12 +12,12 @@ import org.koin.core.annotation.Single
 class GetCepUseCase(
     private val cepRepository: CepRepository
 ) {
-    suspend operator fun invoke(cep: String): Flow<State<CepViewData>> = flow {
+    operator fun invoke(cep: String): Flow<State<CepViewData>> = flow {
         try {
             cepRepository.getDataCep(cep).collect { cepViewData ->
                 emit(State.Success(cepViewData))
             }
-        } catch (exception: Throwable) {
+        } catch (_: Throwable) {
             emit(
                 State.Error(
                     errorType = ErrorType.Error

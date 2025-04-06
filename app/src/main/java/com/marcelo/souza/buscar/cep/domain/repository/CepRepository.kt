@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface CepRepository {
 
-    suspend fun getDataCep(cep: String): Flow<CepViewData>
+    fun getDataCep(cep: String): Flow<CepViewData>
 }

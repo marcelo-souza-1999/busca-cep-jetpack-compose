@@ -9,6 +9,8 @@ import com.marcelo.souza.buscar.cep.domain.usecase.GetCepUseCase
 import com.marcelo.souza.buscar.cep.extensions.isNetworkError
 import com.marcelo.souza.buscar.cep.extensions.isValidCep
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType
+import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.EmptyCep
+import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.InvalidCep
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,18 +39,26 @@ class CepViewModel(
     private val _state = MutableStateFlow("")
     val state = _state.asStateFlow()
 
-    private val _fieldsState = MutableStateFlow<List<FieldsViewData>>(emptyList())
-    val fieldsState = _fieldsState.asStateFlow()
-
-    private val _viewState = MutableStateFlow<State<CepViewData>>(State.Loading())
+    private val _viewState = MutableStateFlow<State<CepViewData>>(State.Initial)
     val viewState = _viewState.asStateFlow()
 
     fun getDataCep(cep: String) = viewModelScope.launch {
+        when {
+            cep.isEmpty() -> {
+                _viewState.value = State.Error(EmptyCep)
+                return@launch
+            }
+
+            !cep.isValidCep() -> {
+                _viewState.value = State.Error(InvalidCep)
+                return@launch
+            }
+        }
+
         getCepUseCase(cep).onStart {
-            _viewState.value = State.Loading()
+            _viewState.value = State.Loading
         }.catch { throwable ->
             val errorType = when {
-                !cep.isValidCep() -> ErrorType.CepInvalidError
                 throwable.isNetworkError() -> ErrorType.NetworkError
                 else -> ErrorType.Error
             }
@@ -56,7 +66,13 @@ class CepViewModel(
         }.collect { result ->
             if (result is State.Success) {
                 _viewState.value = State.Success(result.data)
-                _fieldsState.value = mapToFieldsViewData(result.data)
+                if (result.data.error != true) {
+                    _cep.value = result.data.cep.orEmpty()
+                    _street.value = result.data.street.orEmpty()
+                    _neighborhood.value = result.data.neighborhood.orEmpty()
+                    _city.value = result.data.city.orEmpty()
+                    _state.value = result.data.state.orEmpty()
+                }
             }
         }
     }
@@ -72,29 +88,6 @@ class CepViewModel(
 
     fun updateState(newState: String) = updateStateValue(newState, _state)
 
-    fun validateCepField(): Boolean {
-        val updatedFields = _fieldsState.value.map { field ->
-            if (field.label == LABEL_CEP) {
-                val isEmpty = field.value.isEmpty()
-                val isInvalid = !field.value.isValidCep()
-
-                field.copy(
-                    isErrorEmpty = isEmpty,
-                    isErrorInvalid = isInvalid
-                )
-            } else {
-                field
-            }
-        }
-
-        _fieldsState.value = updatedFields
-
-        return updatedFields.find { it.label == LABEL_CEP }?.let {
-            !it.isErrorEmpty && !it.isErrorInvalid
-        } ?: false
-    }
-
-
     private fun updateStateValue(newValue: String, stateFlow: MutableStateFlow<String>) =
         viewModelScope.launch {
             stateFlow.value = newValue
@@ -103,7 +96,7 @@ class CepViewModel(
     private fun mapToFieldsViewData(cepViewData: CepViewData): List<FieldsViewData> {
         return listOf(
             createFieldViewData(
-                value = cepViewData.cep,
+                value = cepViewData.cep.orEmpty(),
                 onValueChange = ::updateCep,
                 label = LABEL_CEP,
                 enabled = true,
@@ -111,28 +104,28 @@ class CepViewModel(
                 maxLength = EIGHT
             ),
             createFieldViewData(
-                value = cepViewData.street,
+                value = cepViewData.street.orEmpty(),
                 onValueChange = ::updateStreet,
                 label = LABEL_STREET,
                 enabled = false,
                 keyboardType = KeyboardType.Text
             ),
             createFieldViewData(
-                value = cepViewData.neighborhood,
+                value = cepViewData.neighborhood.orEmpty(),
                 onValueChange = ::updateNeighborhood,
                 label = LABEL_NEIGHBORHOOD,
                 enabled = false,
                 keyboardType = KeyboardType.Text
             ),
             createFieldViewData(
-                value = cepViewData.city,
+                value = cepViewData.city.orEmpty(),
                 onValueChange = ::updateCity,
                 label = LABEL_CITY,
                 enabled = false,
                 keyboardType = KeyboardType.Text
             ),
             createFieldViewData(
-                value = cepViewData.state,
+                value = cepViewData.state.orEmpty(),
                 onValueChange = ::updateState,
                 label = LABEL_STATE,
                 enabled = false,

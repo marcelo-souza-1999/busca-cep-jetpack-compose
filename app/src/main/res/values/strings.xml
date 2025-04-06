@@ -19,4 +19,20 @@
     <!-- Botões de ação -->
     <string name="text_btn_search_cep">Buscar Cep</string>
     <string name="text_btn_continue">Continuar</string>
+
+    <!-- Títulos de diálogos de permissões e erros -->
+    <string name="title_get_cep_not_found_error_dialog">CEP não encontrado</string>
+    <string name="message_get_cep_not_found_error_dialog">Verifique o CEP e tente novamente.</string>
+    <string name="title_get_cep_empty_error_dialog">Campo vazio</string>
+    <string name="message_get_cep_empty_error_dialog">Informe o CEP para continuar.</string>
+    <string name="title_get_cep_invalid_error_dialog">CEP inválido</string>
+    <string name="message_get_cep_invalid_error_dialog">Digite um CEP válido.</string>
+    <string name="title_get_cep_error_dialog">Erro na busca</string>
+    <string name="message_get_cep_error_dialog">Ocorreu um erro. Tente novamente mais tarde.</string>
+    <string name="title_get_cep_network_error_dialog">Problema de conexão</string>
+    <string name="message_get_cep_network_error_dialog">Verifique sua internet e tente novamente.</string>
+
+    <!-- Botões de ação em diálogos de erro e exclusão -->
+    <string name="txt_btn_negative_error_dialog">Cancelar</string>
+    <string name="txt_btn_positive_error_dialog">Tentar novamente</string>
 </resources>

@@ -53,8 +53,7 @@ fun FormOutlinedTextField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = OutlinedTextFieldDefaults.colors(
             cursorColor = cursorColor,
-            focusedBorderColor = borderColor,
-            disabledBorderColor = borderColor
+            focusedBorderColor = borderColor
         ),
         modifier = modifier
             .fillMaxWidth()
