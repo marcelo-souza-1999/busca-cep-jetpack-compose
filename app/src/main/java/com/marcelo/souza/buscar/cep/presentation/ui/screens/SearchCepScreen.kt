@@ -34,6 +34,7 @@ import com.marcelo.souza.buscar.cep.presentation.components.ErrorDialog
 import com.marcelo.souza.buscar.cep.presentation.components.FormOutlinedTextField
 import com.marcelo.souza.buscar.cep.presentation.components.PrimaryButton
 import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
+import com.marcelo.souza.buscar.cep.presentation.components.WarningDialog
 import com.marcelo.souza.buscar.cep.presentation.theme.White
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.CepViewModel
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.EmptyCep
@@ -62,10 +63,11 @@ fun SearchCepScreen(
     val viewStateGetDataCep by viewModel.viewState.collectAsState()
     val isLoading = viewStateGetDataCep is State.Loading
 
-    var showErrorGetDataCepDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
     var errorDialogTitle by remember { mutableStateOf("") }
     var errorDialogMessage by remember { mutableStateOf("") }
     var currentErrorType by remember { mutableStateOf("") }
+    var showWarningDialog by remember { mutableStateOf(false) }
 
     val fieldsList = mutableListOf(
         FieldsViewData(
@@ -132,7 +134,7 @@ fun SearchCepScreen(
                     errorDialogMessage =
                         context.getString(R.string.message_get_cep_not_found_error_dialog)
                     currentErrorType = ErrorConstants.NOT_FOUND
-                    showErrorGetDataCepDialog = true
+                    showErrorDialog = true
                 } else {
                     focusManager.clearFocus()
                 }
@@ -146,7 +148,7 @@ fun SearchCepScreen(
                         errorDialogMessage =
                             context.getString(R.string.message_get_cep_empty_error_dialog)
                         currentErrorType = ErrorConstants.EMPTY
-                        showErrorGetDataCepDialog = true
+                        showErrorDialog = true
                     }
 
                     InvalidCep -> {
@@ -155,7 +157,7 @@ fun SearchCepScreen(
                         errorDialogMessage =
                             context.getString(R.string.message_get_cep_invalid_error_dialog)
                         currentErrorType = ErrorConstants.INVALID
-                        showErrorGetDataCepDialog = true
+                        showErrorDialog = true
                     }
 
                     NetworkError -> {
@@ -164,7 +166,7 @@ fun SearchCepScreen(
                         errorDialogMessage =
                             context.getString(R.string.message_get_cep_network_error_dialog)
                         currentErrorType = ErrorConstants.NETWORK
-                        showErrorGetDataCepDialog = true
+                        showErrorDialog = true
                     }
 
                     Error -> {
@@ -172,7 +174,7 @@ fun SearchCepScreen(
                         errorDialogMessage =
                             context.getString(R.string.message_get_cep_error_dialog)
                         currentErrorType = ErrorConstants.ERROR
-                        showErrorGetDataCepDialog = true
+                        showErrorDialog = true
                     }
                 }
             }
@@ -193,76 +195,51 @@ fun SearchCepScreen(
                 .verticalScroll(scrollState)
                 .imePadding()
         ) {
-            CreateFieldsList(fieldsList)
-
-            Spacer(
-                modifier = Modifier.padding(top = dimensionResource(id = R.dimen.size_12))
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = dimensionResource(R.dimen.size_8),
-                        start = dimensionResource(R.dimen.size_12)
-                    )
-            ) {
-                PrimaryButton(
-                    onClickBtn = {
-                        fetchGetDataCep(cepValue)
-                    },
-                    modifier = Modifier.padding(start = dimensionResource(R.dimen.size_20)),
-                    text = stringResource(R.string.text_btn_search_cep),
-                    isLoading = isLoading,
-                    enabled = !isLoading
-                )
-
-                PrimaryButton(
-                    onClickBtn = { /* Lógica de ir pra proxima screen de datalhes do cep */ },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = dimensionResource(R.dimen.size_30),
-                            end = dimensionResource(R.dimen.size_30)
-                        ),
-                    text = stringResource(R.string.text_btn_continue),
-                    isLoading = false
-                )
-            }
-        }
-
-        if (showErrorGetDataCepDialog) {
-            ShowDialog(
-                title = errorDialogTitle,
-                message = errorDialogMessage,
-                onSaveErrorDismiss = { showErrorGetDataCepDialog = false },
-                onRetrySave = {
-                    showErrorGetDataCepDialog = false
-                    when (currentErrorType) {
-                        ErrorConstants.NETWORK -> {
-                            fetchGetDataCep(cepValue)
-                        }
-
-                        ErrorConstants.EMPTY,
-                        ErrorConstants.INVALID,
-                        ErrorConstants.NOT_FOUND,
-                        ErrorConstants.ERROR -> {
-                            viewModel.updateCep("")
-                            cepFocusRequester.requestFocus()
-                        }
-
-                        else -> {
-                            viewModel.updateCep("")
-                            cepFocusRequester.requestFocus()
-                        }
+            ContentSection(
+                fieldsList = fieldsList,
+                isLoading = isLoading,
+                onSearchClick = { fetchGetDataCep(cepValue) },
+                onContinueClick = {
+                    if (viewStateGetDataCep is State.Success) {
+                        viewModel.clearCepStates()
+                    } else {
+                        showWarningDialog = true
                     }
                 }
             )
         }
+
+        DialogSection(
+            showErrorDialog = showErrorDialog,
+            errorDialogTitle = errorDialogTitle,
+            errorDialogMessage = errorDialogMessage,
+            onErrorDialogConfirm = {
+                showErrorDialog = false
+                when (currentErrorType) {
+                    ErrorConstants.NETWORK -> fetchGetDataCep(cepValue)
+                    ErrorConstants.EMPTY,
+                    ErrorConstants.INVALID,
+                    ErrorConstants.NOT_FOUND,
+                    ErrorConstants.ERROR -> {
+                        viewModel.updateCep("")
+                        cepFocusRequester.requestFocus()
+                    }
+
+                    else -> {
+                        viewModel.updateCep("")
+                        cepFocusRequester.requestFocus()
+                    }
+                }
+            },
+            onErrorDialogDismiss = { showErrorDialog = false },
+            showWarningDialog = showWarningDialog,
+            onWarningDialogConfirm = { showWarningDialog = false },
+            onWarningDialogDismiss = { showWarningDialog = false }
+        )
     }
 
-    LaunchedEffect(key1 = showErrorGetDataCepDialog) {
-        if (!showErrorGetDataCepDialog &&
+    LaunchedEffect(key1 = showErrorDialog) {
+        if (!showErrorDialog &&
             currentErrorType in listOf(
                 ErrorConstants.EMPTY,
                 ErrorConstants.INVALID,
@@ -272,6 +249,79 @@ fun SearchCepScreen(
         ) {
             cepFocusRequester.requestFocus()
         }
+    }
+}
+
+@Composable
+private fun ContentSection(
+    fieldsList: List<FieldsViewData>,
+    isLoading: Boolean,
+    onSearchClick: () -> Unit,
+    onContinueClick: () -> Unit
+) {
+    CreateFieldsList(fieldsList)
+
+    Spacer(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.size_12)))
+
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = dimensionResource(R.dimen.size_8),
+                start = dimensionResource(R.dimen.size_12)
+            )
+    ) {
+        PrimaryButton(
+            onClickBtn = onSearchClick,
+            modifier = Modifier.padding(start = dimensionResource(R.dimen.size_20)),
+            text = stringResource(R.string.text_btn_search_cep),
+            isLoading = isLoading,
+            enabled = !isLoading
+        )
+        PrimaryButton(
+            onClickBtn = onContinueClick,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = dimensionResource(R.dimen.size_30),
+                    end = dimensionResource(R.dimen.size_30)
+                ),
+            text = stringResource(R.string.text_btn_continue),
+            isLoading = false
+        )
+    }
+}
+
+@Composable
+private fun DialogSection(
+    showErrorDialog: Boolean,
+    errorDialogTitle: String,
+    errorDialogMessage: String,
+    onErrorDialogConfirm: () -> Unit,
+    onErrorDialogDismiss: () -> Unit,
+    showWarningDialog: Boolean,
+    onWarningDialogConfirm: () -> Unit,
+    onWarningDialogDismiss: () -> Unit
+) {
+    if (showErrorDialog) {
+        ShowDialog(
+            title = errorDialogTitle,
+            message = errorDialogMessage,
+            isErrorDialog = true,
+            isWarningDialog = false,
+            onDismissClick = onErrorDialogDismiss,
+            onConfirmClick = onErrorDialogConfirm
+        )
+    }
+    if (showWarningDialog) {
+        ShowDialog(
+            title = stringResource(R.string.title_continue_error_dialog),
+            message = stringResource(R.string.message_continue_error_dialog),
+            isErrorDialog = false,
+            isWarningDialog = true,
+            onDismissClick = onWarningDialogDismiss,
+            onConfirmClick = onWarningDialogConfirm
+        )
     }
 }
 
@@ -298,22 +348,41 @@ private fun CreateFieldsList(fields: List<FieldsViewData>) {
 private fun ShowDialog(
     title: String,
     message: String,
-    onSaveErrorDismiss: () -> Unit,
-    onRetrySave: () -> Unit
+    isErrorDialog: Boolean,
+    isWarningDialog: Boolean,
+    onDismissClick: () -> Unit,
+    onConfirmClick: () -> Unit
 ) {
-    ErrorDialog(
-        title = title,
-        message = message,
-        isCancelable = true,
-        dialogButtonProperties = DialogButtonProperties(
-            positiveButtonText = R.string.txt_btn_positive_error_dialog,
-            negativeButtonText = R.string.txt_btn_negative_error_dialog,
-            buttonColor = MaterialTheme.colorScheme.primary,
-            buttonTextColor = White
-        ),
-        onConfirmClick = onRetrySave,
-        onDismissClick = onSaveErrorDismiss
-    )
+    if (isErrorDialog) {
+        ErrorDialog(
+            title = title,
+            message = message,
+            isCancelable = true,
+            dialogButtonProperties = DialogButtonProperties(
+                positiveButtonText = R.string.txt_btn_positive_error_dialog,
+                negativeButtonText = R.string.txt_btn_negative_error_dialog,
+                buttonColor = MaterialTheme.colorScheme.primary,
+                buttonTextColor = White
+            ),
+            onConfirmClick = onConfirmClick,
+            onDismissClick = onDismissClick
+        )
+    }
+
+    if (isWarningDialog) {
+        WarningDialog(
+            title = title,
+            message = message,
+            isCancelable = true,
+            dialogButtonProperties = DialogButtonProperties(
+                neutralButtonText = R.string.txt_btn_ok_neutral_dialog,
+                buttonColor = MaterialTheme.colorScheme.primary,
+                buttonTextColor = White
+            ),
+            onConfirmClick = onConfirmClick,
+            onDismissClick = onDismissClick
+        )
+    }
 }
 
 private object ErrorConstants {

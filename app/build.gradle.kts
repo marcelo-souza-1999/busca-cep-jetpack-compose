@@ -103,8 +103,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.bundles.accompanist)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
-    ksp(libs.room.compiler)
-    implementation(libs.bundles.room)
     implementation(libs.bundles.koin)
     ksp(libs.koin.ksp.compiler)
     implementation(libs.bundles.coroutines)

@@ -16,6 +16,8 @@ import com.marcelo.souza.buscar.cep.R
 import com.marcelo.souza.buscar.cep.presentation.theme.CEPTheme
 import com.marcelo.souza.buscar.cep.presentation.ui.navigation.Routes
 import com.marcelo.souza.buscar.cep.presentation.ui.screens.SearchCepScreen
+import org.koin.androidx.compose.KoinAndroidContext
+import org.koin.core.annotation.KoinExperimentalAPI
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,10 +29,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun CepApp() {
     CEPTheme {
-        SetupNavigation()
+        KoinAndroidContext {
+            SetupNavigation()
+        }
     }
 }
 

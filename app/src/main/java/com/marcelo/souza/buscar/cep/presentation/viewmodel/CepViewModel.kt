@@ -1,10 +1,8 @@
 package com.marcelo.souza.buscar.cep.presentation.viewmodel
 
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.marcelo.souza.buscar.cep.domain.model.CepViewData
-import com.marcelo.souza.buscar.cep.domain.model.FieldsViewData
 import com.marcelo.souza.buscar.cep.domain.usecase.GetCepUseCase
 import com.marcelo.souza.buscar.cep.extensions.isNetworkError
 import com.marcelo.souza.buscar.cep.extensions.isValidCep
@@ -88,80 +86,17 @@ class CepViewModel(
 
     fun updateState(newState: String) = updateStateValue(newState, _state)
 
+    fun clearCepStates() = viewModelScope.launch {
+        _cep.value = ""
+        _street.value = ""
+        _neighborhood.value = ""
+        _city.value = ""
+        _state.value = ""
+        _viewState.value = State.Initial
+    }
+
     private fun updateStateValue(newValue: String, stateFlow: MutableStateFlow<String>) =
         viewModelScope.launch {
             stateFlow.value = newValue
         }
-
-    private fun mapToFieldsViewData(cepViewData: CepViewData): List<FieldsViewData> {
-        return listOf(
-            createFieldViewData(
-                value = cepViewData.cep.orEmpty(),
-                onValueChange = ::updateCep,
-                label = LABEL_CEP,
-                enabled = true,
-                keyboardType = KeyboardType.Number,
-                maxLength = EIGHT
-            ),
-            createFieldViewData(
-                value = cepViewData.street.orEmpty(),
-                onValueChange = ::updateStreet,
-                label = LABEL_STREET,
-                enabled = false,
-                keyboardType = KeyboardType.Text
-            ),
-            createFieldViewData(
-                value = cepViewData.neighborhood.orEmpty(),
-                onValueChange = ::updateNeighborhood,
-                label = LABEL_NEIGHBORHOOD,
-                enabled = false,
-                keyboardType = KeyboardType.Text
-            ),
-            createFieldViewData(
-                value = cepViewData.city.orEmpty(),
-                onValueChange = ::updateCity,
-                label = LABEL_CITY,
-                enabled = false,
-                keyboardType = KeyboardType.Text
-            ),
-            createFieldViewData(
-                value = cepViewData.state.orEmpty(),
-                onValueChange = ::updateState,
-                label = LABEL_STATE,
-                enabled = false,
-                keyboardType = KeyboardType.Text
-            )
-        )
-    }
-
-    private fun createFieldViewData(
-        value: String,
-        onValueChange: (String) -> Unit,
-        label: String,
-        enabled: Boolean,
-        keyboardType: KeyboardType,
-        isErrorEmpty: Boolean = false,
-        isErrorInvalid: Boolean = false,
-        maxLength: Int? = null
-    ): FieldsViewData {
-        return FieldsViewData(
-            value = value,
-            onValueChange = onValueChange,
-            enabled = enabled,
-            label = label,
-            keyboardType = keyboardType,
-            isErrorEmpty = isErrorEmpty,
-            isErrorInvalid = isErrorInvalid,
-            maxLength = maxLength
-        )
-    }
-
-    private companion object {
-        private const val LABEL_CEP = "Cep"
-        private const val LABEL_STREET = "Rua"
-        private const val LABEL_NEIGHBORHOOD = "Bairro"
-        private const val LABEL_CITY = "Cidade"
-        private const val LABEL_STATE = "Estado"
-        private const val EIGHT = 8
-    }
 }

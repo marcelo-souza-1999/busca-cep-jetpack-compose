@@ -10,6 +10,7 @@ import org.koin.core.annotation.Single
 @Single
 class RepositoryModule {
 
+    @Single
     fun provideCepRepository(dataSource: CepDataSource): CepRepository =
         CepRepositoryImpl(dataSource)
 }

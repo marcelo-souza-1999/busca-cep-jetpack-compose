@@ -57,7 +57,7 @@ fun DetailsCepScreen(
 }
 
 @Composable
-private fun CepFormFields(fields: List<FieldsViewData>) {
+private fun CreateFieldsList(fields: List<FieldsViewData>) {
     fields.forEach { field ->
         FormOutlinedTextField(
             value = field.value,
