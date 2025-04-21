@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 apply {
@@ -16,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId = "com.marcelo.souza.buscar.cep"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -103,15 +104,14 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.bundles.accompanist)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
-    implementation(libs.androidx.exifinterface)
-    ksp(libs.room.compiler)
-    implementation(libs.bundles.room)
     implementation(libs.bundles.koin)
     ksp(libs.koin.ksp.compiler)
     implementation(libs.bundles.coroutines)
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.gson)
+    implementation(libs.bundles.retrofit)
+    implementation(libs.fancy.compose.alert.dialog)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)

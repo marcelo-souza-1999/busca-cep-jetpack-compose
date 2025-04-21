@@ -1,3 +1,43 @@
 <resources>
     <string name="app_name">CEP</string>
+
+    <!-- Títulos das AppBars -->
+    <string name="title_search_cep_top_app_bar">Buscar Cep</string>
+    <string name="title_details_cep_top_app_bar">Detalhes do Cep</string>
+
+    <!-- Label -->
+    <string name="label_cep">Cep</string>
+    <string name="label_street">Rua</string>
+    <string name="label_neighborhood">Bairro</string>
+    <string name="label_city">Cidade</string>
+    <string name="label_state">Estado</string>
+
+    <!-- Mensagens de erro de validação -->
+    <string name="error_message_required_field">Campo obrigatório</string>
+    <string name="error_message_invalid_field">Insira um Cep válido</string>
+
+    <!-- Botões de ação -->
+    <string name="text_btn_search_cep">Buscar Cep</string>
+    <string name="text_btn_continue">Continuar</string>
+
+    <!-- Títulos de diálogos de erros -->
+    <string name="title_get_cep_not_found_error_dialog">CEP não encontrado</string>
+    <string name="message_get_cep_not_found_error_dialog">Verifique o CEP e tente novamente.</string>
+    <string name="title_get_cep_empty_error_dialog">Campo vazio</string>
+    <string name="message_get_cep_empty_error_dialog">Informe o CEP para continuar.</string>
+    <string name="title_get_cep_invalid_error_dialog">CEP inválido</string>
+    <string name="message_get_cep_invalid_error_dialog">Digite um CEP válido.</string>
+    <string name="title_get_cep_error_dialog">Erro na busca</string>
+    <string name="message_get_cep_error_dialog">Ocorreu um erro. Tente novamente mais tarde.</string>
+    <string name="title_get_cep_network_error_dialog">Problema de conexão</string>
+    <string name="message_get_cep_network_error_dialog">Verifique sua internet e tente novamente.</string>
+
+    <!-- Títulos de diálogos de aviso -->
+    <string name="title_continue_error_dialog">Atenção</string>
+    <string name="message_continue_error_dialog">Para continuar, as informações do CEP precisam ser carregadas com sucesso.</string>
+
+    <!-- Botões de ação em diálogos de aviso e de erro -->
+    <string name="txt_btn_negative_error_dialog">Cancelar</string>
+    <string name="txt_btn_positive_error_dialog">Tentar novamente</string>
+    <string name="txt_btn_ok_neutral_dialog">OK</string>
 </resources>
