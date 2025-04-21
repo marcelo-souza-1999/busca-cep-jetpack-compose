@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 apply {

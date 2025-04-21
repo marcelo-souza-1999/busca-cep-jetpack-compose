@@ -10,6 +10,7 @@ import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.EmptyCep
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.InvalidCep
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.State
+import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.mapError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -55,11 +56,9 @@ class CepViewModel(
 
         getCepUseCase(cep).onStart {
             _viewState.value = State.Loading
-        }.catch { throwable ->
-            val errorType = when {
-                throwable.isNetworkError() -> ErrorType.NetworkError
-                else -> ErrorType.Error
-            }
+        }.catch { exception ->
+            val errorType = if (exception.isNetworkError())
+                ErrorType.NetworkError else ErrorType.Error
             _viewState.value = State.Error(errorType)
         }.collect { result ->
             if (result is State.Success) {
@@ -74,6 +73,8 @@ class CepViewModel(
             }
         }
     }
+
+    fun getErrorDialogResources(type: ErrorType): Pair<Int, Int> = mapError(type)
 
     fun updateCep(newCep: String) = updateStateValue(newCep, _cep)
 
@@ -95,8 +96,10 @@ class CepViewModel(
         _viewState.value = State.Initial
     }
 
-    private fun updateStateValue(newValue: String, stateFlow: MutableStateFlow<String>) =
-        viewModelScope.launch {
-            stateFlow.value = newValue
-        }
+    private fun updateStateValue(
+        newValue: String,
+        stateFlow: MutableStateFlow<String>
+    ) = viewModelScope.launch {
+        stateFlow.value = newValue
+    }
 }

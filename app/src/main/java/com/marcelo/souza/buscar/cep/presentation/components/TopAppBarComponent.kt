@@ -3,6 +3,7 @@ package com.marcelo.souza.buscar.cep.presentation.components
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,6 +26,8 @@ import com.marcelo.souza.buscar.cep.presentation.theme.White
 @Composable
 fun TopAppBar(
     title: String = "",
+    showBackButton: Boolean = false,
+    onBack: (() -> Unit)? = null,
     onClose: (() -> Unit)? = null
 ) {
     TopAppBar(
@@ -38,6 +41,17 @@ fun TopAppBar(
             )
         },
         modifier = Modifier.testTag("topAppBarComponent"),
+        navigationIcon = {
+            if (showBackButton && onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = White
+                    )
+                }
+            }
+        },
         actions = {
             onClose?.let {
                 IconButton(onClick = it) {
@@ -62,8 +76,7 @@ internal fun PreviewTopAppBar() {
     CEPTheme {
         TopAppBar(
             title = "Buscar Cep",
-            onClose = {
-
-            })
+            showBackButton = true,
+            onBack = { })
     }
 }

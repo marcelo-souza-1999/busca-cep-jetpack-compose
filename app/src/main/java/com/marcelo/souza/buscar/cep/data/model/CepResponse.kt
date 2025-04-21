@@ -14,5 +14,5 @@ data class CepResponse(
     @SerializedName("estado")
     val state: String,
     @SerializedName("erro")
-    val error: Boolean?
+    val error: Boolean? = false
 )

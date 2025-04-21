@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.marcelo.souza.buscar.cep.R
 import com.marcelo.souza.buscar.cep.presentation.theme.CEPTheme
 import com.marcelo.souza.buscar.cep.presentation.ui.navigation.Routes
+import com.marcelo.souza.buscar.cep.presentation.ui.screens.DetailsCepScreen
 import com.marcelo.souza.buscar.cep.presentation.ui.screens.SearchCepScreen
 import org.koin.androidx.compose.KoinAndroidContext
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -74,6 +75,10 @@ private fun SetupNavigation() {
     ) {
         composable(route = Routes.SearchCep.route) {
             SearchCepScreen(navController)
+        }
+
+        composable(route = Routes.DetailsCep.route) {
+            DetailsCepScreen(navController)
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.marcelo.souza.buscar.cep.di.initialization
 
 import android.app.Application
-import com.marcelo.souza.buscar.cep.di.modules.RepositoryModule
 import com.marcelo.souza.buscar.cep.di.modules.RetrofitModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -19,8 +18,7 @@ class InitializeKoinApplication : Application() {
             androidContext(this@InitializeKoinApplication)
             modules(
                 defaultModule,
-                RetrofitModule().module,
-                RepositoryModule().module
+                RetrofitModule().module
             )
         }
     }

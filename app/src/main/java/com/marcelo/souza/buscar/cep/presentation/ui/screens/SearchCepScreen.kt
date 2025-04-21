@@ -1,10 +1,10 @@
 package com.marcelo.souza.buscar.cep.presentation.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,13 +21,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.marcelo.souza.buscar.cep.R
+import com.marcelo.souza.buscar.cep.domain.model.CepViewData
 import com.marcelo.souza.buscar.cep.domain.model.FieldsViewData
 import com.marcelo.souza.buscar.cep.presentation.components.ErrorDialog
 import com.marcelo.souza.buscar.cep.presentation.components.FormOutlinedTextField
@@ -36,9 +38,10 @@ import com.marcelo.souza.buscar.cep.presentation.components.PrimaryButton
 import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
 import com.marcelo.souza.buscar.cep.presentation.components.WarningDialog
 import com.marcelo.souza.buscar.cep.presentation.theme.White
+import com.marcelo.souza.buscar.cep.presentation.ui.navigation.Routes
+import com.marcelo.souza.buscar.cep.presentation.ui.utils.Constants.CEP_DATA
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.CepViewModel
-import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.EmptyCep
-import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.Error
+import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.DialogState
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.InvalidCep
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.NetworkError
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.State
@@ -47,29 +50,26 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SearchCepScreen(
-    navController: NavController,
-    viewModel: CepViewModel = koinViewModel()
+    navController: NavController
 ) {
+    val viewModel: CepViewModel = koinViewModel()
+
     val context = LocalContext.current
-    val scrollState = rememberScrollState()
+    val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val cepFocusRequester = remember { FocusRequester() }
 
-    val cepValue by viewModel.cep.collectAsState()
-    val streetValue by viewModel.street.collectAsState()
-    val neighborhoodValue by viewModel.neighborhood.collectAsState()
-    val cityValue by viewModel.city.collectAsState()
-    val stateValue by viewModel.state.collectAsState()
-    val viewStateGetDataCep by viewModel.viewState.collectAsState()
+    val cepValue by viewModel.cep.collectAsStateWithLifecycle()
+    val streetValue by viewModel.street.collectAsStateWithLifecycle()
+    val neighborhoodValue by viewModel.neighborhood.collectAsStateWithLifecycle()
+    val cityValue by viewModel.city.collectAsStateWithLifecycle()
+    val stateValue by viewModel.state.collectAsStateWithLifecycle()
+    val viewStateGetDataCep by viewModel.viewState.collectAsStateWithLifecycle()
     val isLoading = viewStateGetDataCep is State.Loading
 
-    var showErrorDialog by remember { mutableStateOf(false) }
-    var errorDialogTitle by remember { mutableStateOf("") }
-    var errorDialogMessage by remember { mutableStateOf("") }
-    var currentErrorType by remember { mutableStateOf("") }
-    var showWarningDialog by remember { mutableStateOf(false) }
+    var dialogState by remember { mutableStateOf<DialogState>(DialogState.None) }
 
-    val fieldsList = mutableListOf(
+    val fieldsList = listOf(
         FieldsViewData(
             value = cepValue,
             enabled = true,
@@ -121,274 +121,133 @@ fun SearchCepScreen(
         )
     )
 
-    fun fetchGetDataCep(cep: String) = viewModel.getDataCep(cep)
+    fun fetchGetDataCep() = viewModel.getDataCep(cepValue)
 
-    LaunchedEffect(
-        viewStateGetDataCep
-    ) {
-        when (val stateDataCep = viewStateGetDataCep) {
+    LaunchedEffect(viewStateGetDataCep) {
+        when (viewStateGetDataCep) {
             is State.Success -> {
-                if (stateDataCep.data.error == true) {
-                    errorDialogTitle =
-                        context.getString(R.string.title_get_cep_not_found_error_dialog)
-                    errorDialogMessage =
-                        context.getString(R.string.message_get_cep_not_found_error_dialog)
-                    currentErrorType = ErrorConstants.NOT_FOUND
-                    showErrorDialog = true
+                if ((viewStateGetDataCep as State.Success<CepViewData>).data.error == true) {
+                    val (titleResId, messageResId) =
+                        viewModel.getErrorDialogResources(InvalidCep)
+                    dialogState = DialogState.Error(
+                        titleRes = titleResId,
+                        messageRes = messageResId,
+                        errorType = InvalidCep
+                    )
                 } else {
+                    keyboardController?.hide()
                     focusManager.clearFocus()
                 }
             }
 
             is State.Error -> {
-                when (stateDataCep.errorType) {
-                    EmptyCep -> {
-                        errorDialogTitle =
-                            context.getString(R.string.title_get_cep_empty_error_dialog)
-                        errorDialogMessage =
-                            context.getString(R.string.message_get_cep_empty_error_dialog)
-                        currentErrorType = ErrorConstants.EMPTY
-                        showErrorDialog = true
-                    }
-
-                    InvalidCep -> {
-                        errorDialogTitle =
-                            context.getString(R.string.title_get_cep_invalid_error_dialog)
-                        errorDialogMessage =
-                            context.getString(R.string.message_get_cep_invalid_error_dialog)
-                        currentErrorType = ErrorConstants.INVALID
-                        showErrorDialog = true
-                    }
-
-                    NetworkError -> {
-                        errorDialogTitle =
-                            context.getString(R.string.title_get_cep_network_error_dialog)
-                        errorDialogMessage =
-                            context.getString(R.string.message_get_cep_network_error_dialog)
-                        currentErrorType = ErrorConstants.NETWORK
-                        showErrorDialog = true
-                    }
-
-                    Error -> {
-                        errorDialogTitle = context.getString(R.string.title_get_cep_error_dialog)
-                        errorDialogMessage =
-                            context.getString(R.string.message_get_cep_error_dialog)
-                        currentErrorType = ErrorConstants.ERROR
-                        showErrorDialog = true
-                    }
-                }
+                val (titleResId, messageResId) =
+                    viewModel.getErrorDialogResources((viewStateGetDataCep as State.Error<CepViewData>).errorType)
+                dialogState = DialogState.Error(
+                    titleRes = titleResId,
+                    messageRes = messageResId,
+                    errorType = (viewStateGetDataCep as State.Error<CepViewData>).errorType
+                )
             }
 
-            else -> {}
+            else -> Unit
         }
     }
 
-    Scaffold(topBar = {
-        TopAppBar(
-            title = context.getString(R.string.title_search_cep_top_app_bar)
-        )
-    }) { paddingValues ->
+    Scaffold(
+        topBar = {
+            TopAppBar(title = context.getString(R.string.title_search_cep_top_app_bar))
+        }) { paddingValues ->
         Column(
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.size_16)),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(scrollState)
-                .imePadding()
+                .verticalScroll(rememberScrollState())
         ) {
-            ContentSection(
-                fieldsList = fieldsList,
-                isLoading = isLoading,
-                onSearchClick = { fetchGetDataCep(cepValue) },
-                onContinueClick = {
-                    if (viewStateGetDataCep is State.Success) {
-                        viewModel.clearCepStates()
-                    } else {
-                        showWarningDialog = true
-                    }
-                }
-            )
+            fieldsList.forEach { field ->
+                FormOutlinedTextField(
+                    value = field.value,
+                    enabled = field.enabled,
+                    onValueChange = field.onValueChange,
+                    isErrorEmpty = field.isErrorEmpty,
+                    isErrorInvalid = field.isErrorInvalid,
+                    errorMessageEmpty = context.getString(R.string.error_message_required_field),
+                    errorMessageInvalid = context.getString(R.string.error_message_invalid_field),
+                    label = field.label,
+                    modifier = field.modifier,
+                    keyboardType = field.keyboardType,
+                    maxLength = field.maxLength
+                )
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.size_20)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = dimensionResource(R.dimen.size_16))
+            ) {
+                PrimaryButton(
+                    modifier = Modifier.weight(1f),
+                    onClickBtn = { fetchGetDataCep() },
+                    text = context.getString(R.string.text_btn_search_cep),
+                    isLoading = isLoading,
+                    enabled = !isLoading
+                )
+
+                PrimaryButton(
+                    modifier = Modifier.weight(1f), onClickBtn = {
+                        if (viewStateGetDataCep is State.Success
+                            && (viewStateGetDataCep as State.Success<CepViewData>).data.error != true) {
+                            navController.currentBackStackEntry?.savedStateHandle?.set(
+                                CEP_DATA, (viewStateGetDataCep as State.Success).data
+                            )
+                            navController.navigate(Routes.DetailsCep.route)
+                            viewModel.clearCepStates()
+                        } else {
+                            dialogState = DialogState.Warning
+                        }
+                    }, text = context.getString(R.string.text_btn_continue)
+                )
+            }
         }
 
-        DialogSection(
-            showErrorDialog = showErrorDialog,
-            errorDialogTitle = errorDialogTitle,
-            errorDialogMessage = errorDialogMessage,
-            onErrorDialogConfirm = {
-                showErrorDialog = false
-                when (currentErrorType) {
-                    ErrorConstants.NETWORK -> fetchGetDataCep(cepValue)
-                    ErrorConstants.EMPTY,
-                    ErrorConstants.INVALID,
-                    ErrorConstants.NOT_FOUND,
-                    ErrorConstants.ERROR -> {
-                        viewModel.updateCep("")
-                        cepFocusRequester.requestFocus()
-                    }
-
-                    else -> {
-                        viewModel.updateCep("")
-                        cepFocusRequester.requestFocus()
-                    }
-                }
-            },
-            onErrorDialogDismiss = { showErrorDialog = false },
-            showWarningDialog = showWarningDialog,
-            onWarningDialogConfirm = { showWarningDialog = false },
-            onWarningDialogDismiss = { showWarningDialog = false }
-        )
-    }
-
-    LaunchedEffect(key1 = showErrorDialog) {
-        if (!showErrorDialog &&
-            currentErrorType in listOf(
-                ErrorConstants.EMPTY,
-                ErrorConstants.INVALID,
-                ErrorConstants.NOT_FOUND,
-                ErrorConstants.ERROR
-            )
-        ) {
-            cepFocusRequester.requestFocus()
-        }
-    }
-}
-
-@Composable
-private fun ContentSection(
-    fieldsList: List<FieldsViewData>,
-    isLoading: Boolean,
-    onSearchClick: () -> Unit,
-    onContinueClick: () -> Unit
-) {
-    CreateFieldsList(fieldsList)
-
-    Spacer(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.size_12)))
-
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                top = dimensionResource(R.dimen.size_8),
-                start = dimensionResource(R.dimen.size_12)
-            )
-    ) {
-        PrimaryButton(
-            onClickBtn = onSearchClick,
-            modifier = Modifier.padding(start = dimensionResource(R.dimen.size_20)),
-            text = stringResource(R.string.text_btn_search_cep),
-            isLoading = isLoading,
-            enabled = !isLoading
-        )
-        PrimaryButton(
-            onClickBtn = onContinueClick,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = dimensionResource(R.dimen.size_30),
-                    end = dimensionResource(R.dimen.size_30)
+        when (val ds = dialogState) {
+            is DialogState.Error -> ErrorDialog(
+                title = context.getString(ds.titleRes),
+                message = context.getString(ds.messageRes),
+                isCancelable = true,
+                dialogButtonProperties = DialogButtonProperties(
+                    positiveButtonText = R.string.txt_btn_positive_error_dialog,
+                    negativeButtonText = R.string.txt_btn_negative_error_dialog,
+                    buttonColor = MaterialTheme.colorScheme.primary,
+                    buttonTextColor = White
                 ),
-            text = stringResource(R.string.text_btn_continue),
-            isLoading = false
-        )
-    }
-}
+                onConfirmClick = {
+                    dialogState = DialogState.None
+                    when (ds.errorType) {
+                        NetworkError -> fetchGetDataCep()
+                        else -> {
+                            viewModel.updateCep("")
+                            cepFocusRequester.requestFocus()
+                        }
+                    }
+                },
+                onDismissClick = { dialogState = DialogState.None })
 
-@Composable
-private fun DialogSection(
-    showErrorDialog: Boolean,
-    errorDialogTitle: String,
-    errorDialogMessage: String,
-    onErrorDialogConfirm: () -> Unit,
-    onErrorDialogDismiss: () -> Unit,
-    showWarningDialog: Boolean,
-    onWarningDialogConfirm: () -> Unit,
-    onWarningDialogDismiss: () -> Unit
-) {
-    if (showErrorDialog) {
-        ShowDialog(
-            title = errorDialogTitle,
-            message = errorDialogMessage,
-            isErrorDialog = true,
-            isWarningDialog = false,
-            onDismissClick = onErrorDialogDismiss,
-            onConfirmClick = onErrorDialogConfirm
-        )
-    }
-    if (showWarningDialog) {
-        ShowDialog(
-            title = stringResource(R.string.title_continue_error_dialog),
-            message = stringResource(R.string.message_continue_error_dialog),
-            isErrorDialog = false,
-            isWarningDialog = true,
-            onDismissClick = onWarningDialogDismiss,
-            onConfirmClick = onWarningDialogConfirm
-        )
-    }
-}
+            DialogState.Warning -> WarningDialog(
+                title = context.getString(R.string.title_continue_error_dialog),
+                message = context.getString(R.string.message_continue_error_dialog),
+                isCancelable = true,
+                dialogButtonProperties = DialogButtonProperties(
+                    neutralButtonText = R.string.txt_btn_ok_neutral_dialog,
+                    buttonColor = MaterialTheme.colorScheme.primary,
+                    buttonTextColor = White
+                ),
+                onConfirmClick = { dialogState = DialogState.None },
+                onDismissClick = { dialogState = DialogState.None })
 
-@Composable
-private fun CreateFieldsList(fields: List<FieldsViewData>) {
-    fields.forEach { field ->
-        FormOutlinedTextField(
-            value = field.value,
-            enabled = field.enabled,
-            onValueChange = field.onValueChange,
-            isErrorEmpty = field.isErrorEmpty,
-            isErrorInvalid = field.isErrorInvalid,
-            errorMessageEmpty = stringResource(R.string.error_message_required_field),
-            errorMessageInvalid = stringResource(R.string.error_message_invalid_field),
-            label = field.label,
-            modifier = field.modifier,
-            keyboardType = field.keyboardType,
-            maxLength = field.maxLength
-        )
+            else -> Unit
+        }
     }
-}
-
-@Composable
-private fun ShowDialog(
-    title: String,
-    message: String,
-    isErrorDialog: Boolean,
-    isWarningDialog: Boolean,
-    onDismissClick: () -> Unit,
-    onConfirmClick: () -> Unit
-) {
-    if (isErrorDialog) {
-        ErrorDialog(
-            title = title,
-            message = message,
-            isCancelable = true,
-            dialogButtonProperties = DialogButtonProperties(
-                positiveButtonText = R.string.txt_btn_positive_error_dialog,
-                negativeButtonText = R.string.txt_btn_negative_error_dialog,
-                buttonColor = MaterialTheme.colorScheme.primary,
-                buttonTextColor = White
-            ),
-            onConfirmClick = onConfirmClick,
-            onDismissClick = onDismissClick
-        )
-    }
-
-    if (isWarningDialog) {
-        WarningDialog(
-            title = title,
-            message = message,
-            isCancelable = true,
-            dialogButtonProperties = DialogButtonProperties(
-                neutralButtonText = R.string.txt_btn_ok_neutral_dialog,
-                buttonColor = MaterialTheme.colorScheme.primary,
-                buttonTextColor = White
-            ),
-            onConfirmClick = onConfirmClick,
-            onDismissClick = onDismissClick
-        )
-    }
-}
-
-private object ErrorConstants {
-    const val NOT_FOUND = "not_found"
-    const val EMPTY = "empty"
-    const val INVALID = "invalid"
-    const val NETWORK = "network"
-    const val ERROR = "error"
 }
