@@ -5,11 +5,10 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kotlin.parcelize)
+    id("jacoco")
 }
 
-apply {
-    from("../config/detekt/detekt.gradle")
-}
+apply(from = "../config/detekt/detekt.gradle")
 
 android {
     namespace = "com.marcelo.souza.buscar.cep"
@@ -31,6 +30,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            enableUnitTestCoverage = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -75,23 +75,6 @@ android {
     }
 }
 
-tasks.register<io.gitlab.arturbosch.detekt.Detekt>("detektAll") {
-    parallel = true
-    buildUponDefaultConfig = true
-    setSource(files(projectDir))
-    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
-    include("**/*.kt")
-    include("**/*.kts")
-    exclude("**/build/**")
-    reports {
-        xml.required.set(false)
-        html.required.set(true)
-        txt.required.set(true)
-        sarif.required.set(true)
-        sarif.outputLocation.set(file("build/reports/detekt/detekt.sarif"))
-    }
-}
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -126,4 +109,55 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+tasks.register<io.gitlab.arturbosch.detekt.Detekt>("detektAll") {
+    parallel = true
+    buildUponDefaultConfig = true
+    setSource(files(projectDir))
+    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
+    include("**/*.kt")
+    include("**/*.kts")
+    exclude("**/build/**")
+    reports {
+        xml.required.set(false)
+        html.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        sarif.outputLocation.set(file("build/reports/detekt/detekt.sarif"))
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Gera relatório de cobertura dos Unit Tests (JVM)"
+
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/coverage/jacocoUnit/html"))
+    }
+
+    val fileFilter = listOf(
+        "**/R.class", "**/R$*.class",
+        "**/BuildConfig.*", "**/Manifest*.*"
+    )
+
+    val javaClasses = fileTree("${buildDir}/intermediates/javac/debug") { exclude(fileFilter) }
+    val kotlinClasses = fileTree("${buildDir}/tmp/kotlin-classes/debug") { exclude(fileFilter) }
+
+    classDirectories.setFrom(files(javaClasses, kotlinClasses))
+    sourceDirectories.setFrom(files(
+        "$projectDir/src/main/java",
+        "$projectDir/src/main/kotlin"
+    ))
+    executionData.setFrom(fileTree(buildDir) {
+        include("jacoco/testDebugUnitTest.exec")
+    })
 }
