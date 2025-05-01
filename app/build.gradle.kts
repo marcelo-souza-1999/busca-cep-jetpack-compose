@@ -7,9 +7,7 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
 }
 
-apply {
-    from("../config/detekt/detekt.gradle")
-}
+apply(from = "../config/detekt/detekt.gradle")
 
 android {
     namespace = "com.marcelo.souza.buscar.cep"
@@ -31,6 +29,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            enableUnitTestCoverage = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -75,23 +74,6 @@ android {
     }
 }
 
-tasks.register<io.gitlab.arturbosch.detekt.Detekt>("detektAll") {
-    parallel = true
-    buildUponDefaultConfig = true
-    setSource(files(projectDir))
-    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
-    include("**/*.kt")
-    include("**/*.kts")
-    exclude("**/build/**")
-    reports {
-        xml.required.set(false)
-        html.required.set(true)
-        txt.required.set(true)
-        sarif.required.set(true)
-        sarif.outputLocation.set(file("build/reports/detekt/detekt.sarif"))
-    }
-}
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -118,6 +100,7 @@ dependencies {
     testImplementation(libs.androidx.core.testing)
     testImplementation(libs.mockk.io)
     testImplementation(libs.bundles.mockito.test)
+    testImplementation(libs.mockwebserver)
     androidTestImplementation(libs.bundles.koin.test)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.androidx.junit)
@@ -126,4 +109,21 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+tasks.register<io.gitlab.arturbosch.detekt.Detekt>("detektAll") {
+    parallel = true
+    buildUponDefaultConfig = true
+    setSource(files(projectDir))
+    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
+    include("**/*.kt")
+    include("**/*.kts")
+    exclude("**/build/**")
+    reports {
+        xml.required.set(false)
+        html.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        sarif.outputLocation.set(file("build/reports/detekt/detekt.sarif"))
+    }
 }

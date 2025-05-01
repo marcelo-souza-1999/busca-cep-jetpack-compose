@@ -1,5 +1,7 @@
 package com.marcelo.souza.buscar.cep.presentation.ui.screens
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,7 +41,6 @@ import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
 import com.marcelo.souza.buscar.cep.presentation.components.WarningDialog
 import com.marcelo.souza.buscar.cep.presentation.theme.White
 import com.marcelo.souza.buscar.cep.presentation.ui.navigation.Routes
-import com.marcelo.souza.buscar.cep.presentation.ui.utils.Constants.CEP_DATA
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.CepViewModel
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.DialogState
 import com.marcelo.souza.buscar.cep.presentation.viewmodel.viewstate.ErrorType.InvalidCep
@@ -50,10 +51,9 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SearchCepScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: CepViewModel = koinViewModel()
 ) {
-    val viewModel: CepViewModel = koinViewModel()
-
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -77,6 +77,7 @@ fun SearchCepScreen(
             isErrorEmpty = false,
             isErrorInvalid = false,
             modifier = Modifier
+                .testTag("fieldCep")
                 .padding(top = dimensionResource(R.dimen.size_30))
                 .focusRequester(cepFocusRequester),
             onValueChange = viewModel::updateCep,
@@ -88,7 +89,8 @@ fun SearchCepScreen(
             label = stringResource(R.string.label_street),
             isErrorEmpty = false,
             isErrorInvalid = false,
-            modifier = Modifier.testTag("inputStreet"),
+            modifier = Modifier
+                .testTag("fieldStreet"),
             onValueChange = viewModel::updateStreet,
             keyboardType = KeyboardType.Text
         ), FieldsViewData(
@@ -97,7 +99,8 @@ fun SearchCepScreen(
             label = stringResource(R.string.label_neighborhood),
             isErrorEmpty = false,
             isErrorInvalid = false,
-            modifier = Modifier.testTag("inputNeighborhood"),
+            modifier = Modifier
+                .testTag("fieldNeighborhood"),
             onValueChange = viewModel::updateNeighborhood,
             keyboardType = KeyboardType.Text
         ), FieldsViewData(
@@ -106,7 +109,8 @@ fun SearchCepScreen(
             label = stringResource(R.string.label_city),
             isErrorEmpty = false,
             isErrorInvalid = false,
-            modifier = Modifier.testTag("inputCity"),
+            modifier = Modifier
+                .testTag("fieldCity"),
             onValueChange = viewModel::updateCity,
             keyboardType = KeyboardType.Text
         ), FieldsViewData(
@@ -115,7 +119,8 @@ fun SearchCepScreen(
             label = stringResource(R.string.label_state),
             isErrorEmpty = false,
             isErrorInvalid = false,
-            modifier = Modifier.testTag("inputState"),
+            modifier = Modifier
+                .testTag("fieldState"),
             onValueChange = viewModel::updateState,
             keyboardType = KeyboardType.Text
         )
@@ -165,21 +170,7 @@ fun SearchCepScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            fieldsList.forEach { field ->
-                FormOutlinedTextField(
-                    value = field.value,
-                    enabled = field.enabled,
-                    onValueChange = field.onValueChange,
-                    isErrorEmpty = field.isErrorEmpty,
-                    isErrorInvalid = field.isErrorInvalid,
-                    errorMessageEmpty = context.getString(R.string.error_message_required_field),
-                    errorMessageInvalid = context.getString(R.string.error_message_invalid_field),
-                    label = field.label,
-                    modifier = field.modifier,
-                    keyboardType = field.keyboardType,
-                    maxLength = field.maxLength
-                )
-            }
+            PopulateFieldList(fieldsList, context)
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.size_20)),
@@ -187,27 +178,28 @@ fun SearchCepScreen(
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(R.dimen.size_16))
             ) {
-                PrimaryButton(
-                    modifier = Modifier.weight(1f),
-                    onClickBtn = { fetchGetDataCep() },
-                    text = context.getString(R.string.text_btn_search_cep),
+                CepActionButtons(
                     isLoading = isLoading,
-                    enabled = !isLoading
-                )
-
-                PrimaryButton(
-                    modifier = Modifier.weight(1f), onClickBtn = {
-                        if (viewStateGetDataCep is State.Success
-                            && (viewStateGetDataCep as State.Success<CepViewData>).data.error != true) {
-                            navController.currentBackStackEntry?.savedStateHandle?.set(
-                                CEP_DATA, (viewStateGetDataCep as State.Success).data
-                            )
-                            navController.navigate(Routes.DetailsCep.route)
+                    onSearch = { fetchGetDataCep() },
+                    onContinue = {
+                        if (viewStateGetDataCep is State.Success &&
+                            (viewStateGetDataCep as State.Success<CepViewData>).data.error != true
+                        ) {
+                            val data = (viewStateGetDataCep as State.Success<CepViewData>).data
+                            val route = buildString {
+                                append(Routes.DetailsCep.route)
+                                append("/${Uri.encode(data.cep)}")
+                                append("/${Uri.encode(data.street)}")
+                                append("/${Uri.encode(data.neighborhood)}")
+                                append("/${Uri.encode(data.city)}")
+                                append("/${Uri.encode(data.state)}")
+                            }
+                            navController.navigate(route)
                             viewModel.clearCepStates()
                         } else {
                             dialogState = DialogState.Warning
                         }
-                    }, text = context.getString(R.string.text_btn_continue)
+                    }
                 )
             }
         }
@@ -249,5 +241,57 @@ fun SearchCepScreen(
 
             else -> Unit
         }
+    }
+}
+
+@Composable
+private fun PopulateFieldList(
+    fieldsList: List<FieldsViewData>,
+    context: Context
+) = fieldsList.forEach { field ->
+    FormOutlinedTextField(
+        value = field.value,
+        enabled = field.enabled,
+        onValueChange = field.onValueChange,
+        isErrorEmpty = field.isErrorEmpty,
+        isErrorInvalid = field.isErrorInvalid,
+        errorMessageEmpty = context.getString(R.string.error_message_required_field),
+        errorMessageInvalid = context.getString(R.string.error_message_invalid_field),
+        label = field.label,
+        modifier = field.modifier,
+        keyboardType = field.keyboardType,
+        maxLength = field.maxLength
+    )
+}
+
+@Composable
+private fun CepActionButtons(
+    isLoading: Boolean,
+    onSearch: () -> Unit,
+    onContinue: () -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.size_20)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = dimensionResource(R.dimen.size_16))
+    ) {
+        PrimaryButton(
+            modifier = Modifier
+                .testTag("primaryButton")
+                .weight(1f),
+            onClickBtn = onSearch,
+            text = stringResource(R.string.text_btn_search_cep),
+            isLoading = isLoading,
+            enabled = !isLoading
+        )
+
+        PrimaryButton(
+            modifier = Modifier
+                .testTag("secondaryButton")
+                .weight(1f),
+            onClickBtn = onContinue,
+            text = stringResource(R.string.text_btn_continue)
+        )
     }
 }
