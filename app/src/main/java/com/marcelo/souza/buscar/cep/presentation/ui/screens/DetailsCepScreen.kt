@@ -1,6 +1,5 @@
 package com.marcelo.souza.buscar.cep.presentation.ui.screens
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -23,21 +21,13 @@ import com.marcelo.souza.buscar.cep.domain.model.CepViewData
 import com.marcelo.souza.buscar.cep.domain.model.FieldsViewData
 import com.marcelo.souza.buscar.cep.presentation.components.FormOutlinedTextField
 import com.marcelo.souza.buscar.cep.presentation.components.TopAppBar
-import com.marcelo.souza.buscar.cep.presentation.ui.navigation.Routes
-import com.marcelo.souza.buscar.cep.presentation.ui.utils.Constants
 
-@SuppressLint("UnrememberedGetBackStackEntry")
 @Composable
 fun DetailsCepScreen(
     navController: NavController,
     cepData: CepViewData? = null
 ) {
     val scrollState = rememberScrollState()
-
-    val backStackEntry = remember(navController, Routes.SearchCep.route) {
-        navController.getBackStackEntry(Routes.SearchCep.route)
-    }
-    val cepData = cepData ?: backStackEntry.savedStateHandle.get<CepViewData>(Constants.CEP_DATA)
 
     Scaffold(topBar = {
         TopAppBar(

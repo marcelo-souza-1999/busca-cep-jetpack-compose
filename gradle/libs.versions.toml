@@ -26,6 +26,7 @@ detekt = "1.23.6"
 gson = "2.10.1"
 retrofit = "2.11.0"
 fancyComposeAlertDialog = "1.0.2"
+okhttp = "4.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -66,6 +67,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit_converter_gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 fancy-compose-alert-dialog = { group = "com.github.PratikFagadiya", name = "FancyJetpackComposeDialog", version.ref = "fancyComposeAlertDialog" }
+mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 
 [bundles]
 accompanist = ["google-accompanist-system-ui-controller", "google-accompanist-permissions"]

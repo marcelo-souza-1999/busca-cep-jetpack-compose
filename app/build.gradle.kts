@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.detekt)
     alias(libs.plugins.kotlin.parcelize)
-    id("jacoco")
 }
 
 apply(from = "../config/detekt/detekt.gradle")
@@ -101,6 +100,7 @@ dependencies {
     testImplementation(libs.androidx.core.testing)
     testImplementation(libs.mockk.io)
     testImplementation(libs.bundles.mockito.test)
+    testImplementation(libs.mockwebserver)
     androidTestImplementation(libs.bundles.koin.test)
     androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.androidx.junit)
@@ -126,38 +126,4 @@ tasks.register<io.gitlab.arturbosch.detekt.Detekt>("detektAll") {
         sarif.required.set(true)
         sarif.outputLocation.set(file("build/reports/detekt/detekt.sarif"))
     }
-}
-
-jacoco {
-    toolVersion = "0.8.11"
-}
-
-tasks.register<JacocoReport>("jacocoTestReport") {
-    group = "verification"
-    description = "Gera relatório de cobertura dos Unit Tests (JVM)"
-
-    dependsOn("testDebugUnitTest")
-
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-        html.outputLocation.set(layout.buildDirectory.dir("reports/coverage/jacocoUnit/html"))
-    }
-
-    val fileFilter = listOf(
-        "**/R.class", "**/R$*.class",
-        "**/BuildConfig.*", "**/Manifest*.*"
-    )
-
-    val javaClasses = fileTree("${buildDir}/intermediates/javac/debug") { exclude(fileFilter) }
-    val kotlinClasses = fileTree("${buildDir}/tmp/kotlin-classes/debug") { exclude(fileFilter) }
-
-    classDirectories.setFrom(files(javaClasses, kotlinClasses))
-    sourceDirectories.setFrom(files(
-        "$projectDir/src/main/java",
-        "$projectDir/src/main/kotlin"
-    ))
-    executionData.setFrom(fileTree(buildDir) {
-        include("jacoco/testDebugUnitTest.exec")
-    })
 }

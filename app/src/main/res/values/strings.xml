@@ -2,7 +2,7 @@
     <string name="app_name">CEP</string>
 
     <!-- Títulos das AppBars -->
-    <string name="title_search_cep_top_app_bar">Buscar Cep</string>
+    <string name="title_search_cep_top_app_bar">Cep</string>
     <string name="title_details_cep_top_app_bar">Detalhes do Cep</string>
 
     <!-- Label -->

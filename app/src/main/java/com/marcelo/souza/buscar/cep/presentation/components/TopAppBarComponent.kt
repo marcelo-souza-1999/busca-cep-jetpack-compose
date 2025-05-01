@@ -75,7 +75,7 @@ fun TopAppBar(
 internal fun PreviewTopAppBar() {
     CEPTheme {
         TopAppBar(
-            title = "Buscar Cep",
+            title = "Cep",
             showBackButton = true,
             onBack = { })
     }

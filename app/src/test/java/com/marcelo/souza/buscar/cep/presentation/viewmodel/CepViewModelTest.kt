@@ -16,6 +16,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -241,6 +243,111 @@ class CepViewModelTest {
         ).forEach { (type, expectedTitle) ->
             val (title, _) = viewModel.getErrorDialogResources(type)
             assertEquals(expectedTitle, title)
+        }
+    }
+
+    @Test
+    fun getDataCep_shouldEmitLoadingState() = runTest(testDispatcher) {
+        val neverEndingFlow = flow<State<CepViewData>> {
+            emit(State.Loading)
+            suspendCancellableCoroutine { /* nunca completa */ }
+        }
+
+        coEvery { getCepUseCase("01001000") } returns neverEndingFlow
+
+        val emittedStates = mutableListOf<State<CepViewData>>()
+        val job = launch { viewModel.viewState.collect { emittedStates.add(it) } }
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        emittedStates.clear()
+
+        viewModel.getDataCep("01001000")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        job.cancel()
+
+        assertTrue(emittedStates.isNotEmpty())
+        assertTrue(emittedStates[0] is State.Loading)
+    }
+
+    @Test
+    fun getDataCep_shouldEmitSuccessStateAfterLoading() = runTest(testDispatcher) {
+        val dummy = CepViewData(
+            cep = "01001000",
+            street = "Rua X",
+            neighborhood = "Bairro Y",
+            city = "Cidade Z",
+            state = "ST",
+            error = false
+        )
+
+        val flow = flow<State<CepViewData>> {
+            emit(State.Loading)
+            emit(State.Success(dummy))
+        }
+
+        coEvery { getCepUseCase("01001000") } returns flow
+
+        viewModel.getDataCep("01001000")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val finalState = viewModel.viewState.value
+        assertTrue(finalState is State.Success)
+        assertEquals(dummy, (finalState as State.Success).data)
+    }
+
+    @Test
+    fun mapError_shouldIncludeCorrectMessageForEachErrorType() {
+        listOf(
+            ErrorType.EmptyCep to R.string.message_get_cep_empty_error_dialog,
+            ErrorType.InvalidCep to R.string.message_get_cep_invalid_error_dialog,
+            ErrorType.NetworkError to R.string.message_get_cep_network_error_dialog,
+            ErrorType.Error to R.string.message_get_cep_error_dialog
+        ).forEach { (type, expectedMessage) ->
+            val (_, message) = viewModel.getErrorDialogResources(type)
+            assertEquals(expectedMessage, message)
+        }
+    }
+
+    @Test
+    fun getDataCep_withFormattedCep_shouldHandleCorrectly() = runTest(testDispatcher) {
+        val dummy = CepViewData(
+            cep = "12213350",
+            street = "Rua X",
+            neighborhood = "Bairro Y",
+            city = "Cidade Z",
+            state = "ST",
+            error = false
+        )
+        coEvery { getCepUseCase("12213350") } returns flowOf(State.Success(dummy))
+
+        viewModel.getDataCep("12213350")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.viewState.value
+        assertTrue(state is State.Success)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun updateStateValue_shouldUpdateStateWithoutSideEffects() = runTest(testDispatcher) {
+        val fields = listOf(
+            Triple("newCep", viewModel::updateCep, viewModel.cep),
+            Triple("newStreet", viewModel::updateStreet, viewModel.street),
+            Triple("newNeighborhood", viewModel::updateNeighborhood, viewModel.neighborhood),
+            Triple("newCity", viewModel::updateCity, viewModel.city),
+            Triple("newState", viewModel::updateState, viewModel.state)
+        )
+
+        fields.forEach { (value, updateFn, stateFlow) ->
+            updateFn("initial")
+            runCurrent()
+
+            updateFn(value)
+            runCurrent()
+
+            assertEquals(value, stateFlow.value)
+            assertTrue(viewModel.viewState.value is State.Initial)
         }
     }
 }

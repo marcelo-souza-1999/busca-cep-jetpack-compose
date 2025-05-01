@@ -39,7 +39,7 @@ class CepViewModel(
     val state = _state.asStateFlow()
 
     private val _viewState = MutableStateFlow<State<CepViewData>>(State.Initial)
-    val viewState = _viewState.asStateFlow()
+    var viewState = _viewState.asStateFlow()
 
     fun getDataCep(cep: String) = viewModelScope.launch {
         when {
