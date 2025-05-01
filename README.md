@@ -60,7 +60,7 @@
 <details>
 <summary>📽️ Clique para visualizar o vídeo</summary>
 
-
+https://github.com/user-attachments/assets/4e59a5b0-21f5-4046-ba14-6a07c4bfae95
 
 </details>
 
